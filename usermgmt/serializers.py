@@ -38,9 +38,12 @@ class UserPatchSerializer(serializers.ModelSerializer):
 
         appuser = validated_data.pop("appuser", "")
         if appuser:
+
             picture = appuser.pop("picture", "")
-            instance.appuser.picture = picture
-            instance.appuser.save()
+            if picture:
+                instance.appuser.picture.delete()
+                instance.appuser.picture = picture
+                instance.appuser.save()
 
         instance.save()
         return instance
