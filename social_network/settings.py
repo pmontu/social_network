@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'oauth2_provider',
     'django_extensions',
-    'rest_framework'
+    'rest_framework',
+    'usermgmt',
 ]
 
 MIDDLEWARE_CLASSES = [
