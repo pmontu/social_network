@@ -11,11 +11,49 @@ class UserSerializer(serializers.Serializer):
     password = serializers.CharField(
         max_length=128, write_only=True,
         style={'input_type': 'password'})
+    picture = serializers.ImageField(
+        use_url=False, required=False,
+        source="appuser.picture"
+    )
 
     def create(self, validated_data):
+        appuser = validated_data.pop("appuser", None)
         user = User.objects.create_user(**validated_data)
-        AppUser.objects.create(user=user)
+
+        kwargs = {"user": user}
+        if appuser:
+            kwargs["picture"] = appuser["picture"]
+        AppUser.objects.create(**kwargs)
         return user
+
+    class Meta:
+        model = User
+
+
+class UserPatchSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    username = serializers.CharField(read_only=True)
+    password = serializers.CharField(
+        max_length=128, write_only=True,
+        style={'input_type': 'password'},
+        required=False)
+    picture = serializers.ImageField(
+        use_url=False, required=False,
+        source="appuser.picture")
+
+    def update(self, instance, validated_data):
+        password = validated_data.get("password", "")
+        if password:
+            instance.set_password(password)
+
+        appuser = validated_data.pop("appuser", "")
+        if appuser:
+            picture = appuser.pop("picture", "")
+            instance.appuser.picture = picture
+            instance.appuser.save()
+
+        instance.save()
+        return instance
 
     class Meta:
         model = User

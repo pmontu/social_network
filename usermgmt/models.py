@@ -8,3 +8,4 @@ class AppUser(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
+    picture = models.ImageField(upload_to='static/images/')

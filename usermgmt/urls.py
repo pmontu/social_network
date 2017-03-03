@@ -7,4 +7,7 @@ urlpatterns = [
     		"get": "list",
     		"post": "create"
     	})),
+    url(r'^(?P<pk>[0-9]+)/$', UserViewSet.as_view({
+    		"patch": "update"
+    	})),
 ]
