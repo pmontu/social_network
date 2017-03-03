@@ -5,12 +5,7 @@ from rest_framework.validators import UniqueValidator
 from .models import AppUser
 
 
-class UserSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    username = serializers.CharField(validators=[UniqueValidator(queryset=User.objects.all())])
-    password = serializers.CharField(
-        max_length=128, write_only=True,
-        style={'input_type': 'password'})
+class UserSerializer(serializers.ModelSerializer):
     picture = serializers.ImageField(
         use_url=False, required=False,
         source="appuser.picture"
@@ -20,23 +15,18 @@ class UserSerializer(serializers.Serializer):
         appuser = validated_data.pop("appuser", None)
         user = User.objects.create_user(**validated_data)
 
-        kwargs = {"user": user}
-        if appuser:
-            kwargs["picture"] = appuser["picture"]
-        AppUser.objects.create(**kwargs)
+        if appuser and appuser["picture"]:
+            AppUser.objects.create(user=user, picture=appuser["picture"])
+
         return user
 
     class Meta:
         model = User
+        fields = ("id", "username", "password", "picture")
+        extra_kwargs = {"password": {"write_only": True}}
 
 
-class UserPatchSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    username = serializers.CharField(read_only=True)
-    password = serializers.CharField(
-        max_length=128, write_only=True,
-        style={'input_type': 'password'},
-        required=False)
+class UserPatchSerializer(serializers.ModelSerializer):
     picture = serializers.ImageField(
         use_url=False, required=False,
         source="appuser.picture")
@@ -57,3 +47,6 @@ class UserPatchSerializer(serializers.Serializer):
 
     class Meta:
         model = User
+        fields = ("id", "username", "password", "picture")
+        read_only_fields = ("username", )
+        extra_kwargs = {"password": {"required": False, "write_only": True}}
